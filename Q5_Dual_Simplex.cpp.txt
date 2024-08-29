@@ -1,0 +1,178 @@
+//TEST CASE
+
+/*
+Enter 0 for max 1 for min 0
+Enter no. of variables:2
+Enter no. of constraints:2
+Enter coefficients of objective function: -15 -10
+Enter Constraints: -3 -5 < -5 
+-5 -2 < -3
+
+0.105263        -0.263158       0.263158
+-0.263158       0.157895        0.842105
+1.05263 2.36842 -12.3684
+
+Solution:
+Z = -12.3684
+At:
+X0 = 0.263158
+X1 = 0.842105
+X2=0
+X3=0
+*/
+#include<iostream>
+#include<stdlib.h>
+using namespace std;
+
+void Display_Matrix(double **Matrix,int no_of_constraints,int n) {
+	for(int i=0;i<no_of_constraints;i++) {
+		for(int j=0;j<n;j++) cout<<Matrix[i][j]<<"\t";
+		cout<<"\n";
+	}
+}
+
+void Constraints(double **Matrix,double *Z,int no_of_constraints,int n) {
+	cout<<"Enter Constraints: a1 a2 ... (< or >)c1   ";
+	char sign,g='>';
+	for(int i=0;i<no_of_constraints;i++) {
+		for(int j=0;j<n;j++) cin>>Matrix[i][j];
+		cin>>sign;
+		cin>>Matrix[i][n];
+		if(sign==g) {
+			for(int j=0;j<=n;j++) Matrix[i][j]*=-1;
+		}
+	}
+	for(int i=0;i<n;i++) Matrix[no_of_constraints][i]=-1*Z[i];
+	Matrix[no_of_constraints][n]=0;
+}
+
+void Calculations(double** Matrix,int no_of_constraints,int n,int a,int b) {
+	double p;
+	double **B;
+	B=(double **)malloc((no_of_constraints+1)*sizeof(double *));
+	for(int i=0;i<=no_of_constraints;i++) 
+		B[i]=(double *)malloc((n+1)*sizeof(double));
+	for(int i=0;i<=no_of_constraints;i++)
+		for(int j=0;j<=n;j++) B[i][j]=Matrix[i][j];
+
+	p=B[a][b];
+	Matrix[a][b]=1/p;
+	for(int i=0;i<=no_of_constraints;i++) 
+		if(i!=a) Matrix[i][b]=-1*B[i][b]/p;
+	for(int j=0;j<=n;j++) 
+		if(j!=b) Matrix[a][j]=B[a][j]/p;
+	for(int i=0;i<=no_of_constraints;i++) {
+		for(int j=0;j<=n;j++) {
+			if((i!=a)&&(j!=b)) 
+				Matrix[i][j]= ((B[a][b]*B[i][j])-(B[a][j]*B[i][b]))/p;
+		}
+	}
+}
+
+double Solution_Primal(double **Matrix,double *M,int no_of_constraints,int n,int im) {
+	int J=-1,I;
+	double min=0,PI;
+	for(int j=0;j<n;j++) if(Matrix[no_of_constraints][j]<min) {min=Matrix[no_of_constraints][j]; J=j;}
+	double sum=-1,ratio;
+	for(int i=0;i<no_of_constraints;i++) {
+		if(Matrix[i][J]>0) {
+			ratio=Matrix[i][n]/Matrix[i][J];
+			if((sum==-1)||(sum>ratio)) {sum=ratio; I=i;}
+		}
+	}
+	if(im==1) {
+		PI=Matrix[I][n]*Matrix[no_of_constraints][J]/Matrix[I][J];
+		if(PI<0) PI*=-1;	cout<<"PI="<<PI<<"\n";
+		return PI;
+	}
+	Calculations(Matrix,no_of_constraints,n,I,J);
+	int temp;
+	temp=M[I+n];
+	M[I+n]=M[J];
+	M[J]=temp;
+	return 0;
+}
+
+double Solution_Dual(double **Matrix,double *M,int no_of_constraints,int n,int im) {
+	int I=-1,J;
+	double min=0,DI;
+	for(int i=0;i<no_of_constraints;i++) if(Matrix[i][n]<min) {min=Matrix[i][n]; I=i;}
+	double sum=-1,ratio;
+	for(int j=0;j<no_of_constraints;j++) {
+		if(Matrix[I][j]<0) {
+			ratio=Matrix[no_of_constraints][j]/Matrix[I][j];
+			if((sum==-1)||(sum>ratio)) {sum=ratio; J=j;}
+		}
+	}
+	if(im==1) {
+		DI=Matrix[I][n]*Matrix[no_of_constraints][J]/Matrix[I][J];
+		if(DI<0) DI*=-1; cout<<"DI="<<DI<<"\n";
+		return DI;
+	}
+	Calculations(Matrix,no_of_constraints,n,I,J);
+	int temp;
+	temp=M[I+n];
+	M[I+n]=M[J];
+	M[J]=temp;
+	return 0;
+}
+
+void Solution_Dual_Simplex(double** Matrix,double *M,int no_of_constraints,int n) {
+	int c1=0,c2=0;
+	for(int i=0;i<no_of_constraints;i++) if(Matrix[i][n]<0) c1=1;	
+	for(int j=0;j<n;j++) if(Matrix[no_of_constraints][j]<0) c2=1;	
+	if((c1==0)&&(c2==0)) return;
+	else if(c1==0) Solution_Primal(Matrix,M,no_of_constraints,n,0);
+	else if(c2==0) Solution_Dual(Matrix,M,no_of_constraints,n,0);
+	else {						
+	 	double PI,DI;
+		PI=Solution_Primal(Matrix,M,no_of_constraints,n,1);
+		DI=Solution_Dual(Matrix,M,no_of_constraints,n,1);
+		if(PI>=DI) Solution_Primal(Matrix,M,no_of_constraints,n,0);
+		else Solution_Dual(Matrix,M,no_of_constraints,n,0);
+	} 
+	Solution_Dual_Simplex(Matrix,M,no_of_constraints,n);
+}
+
+void End_Solution(double**Matrix,double*M,int no_of_constraints,int n) {
+	cout<<"Solution:\nZ = "<<Matrix[no_of_constraints][n];
+	cout<<"\nMatrixt:\n";
+	for(int i=0;i<no_of_constraints;i++) cout<<"X"<<M[i+n]<<" = "<<Matrix[i][n]<<"\n";
+	for(int i=0;i<n;i++) cout<<"X"<<M[i]<<"=0\n";
+}
+
+int main() {
+	int i,n,no_of_constraints;
+	cout<<"Enter 0 for max 1 for min: ";
+	int check=0;
+	cin>>check;
+	cout<<"Enter no. of variables:";
+	cin>>n;
+	cout<<"Enter no. of constraints:";
+	cin>>no_of_constraints;
+	double *Z,*M,**Matrix;
+	Z=(double *)malloc(n*sizeof(double));
+
+	Matrix=(double **)malloc((no_of_constraints+1)*sizeof(double *));
+	for(i=0;i<=no_of_constraints;i++) 
+		Matrix[i]=(double *)malloc((n+1)*sizeof(double));
+
+	M=(double *)malloc((n+no_of_constraints)*sizeof(double));
+	for(i=0;i<no_of_constraints+n;i++) M[i]=i;
+	
+	cout<<"Enter coefficients of objective function: ";
+	for(i=0;i<n;i++) cin>>Z[i];
+	if(check==1)
+		for(i=0;i<n;i++) Z[i]=-1*Z[i];
+
+	Constraints(Matrix,Z,no_of_constraints,n);
+
+	Solution_Dual_Simplex(Matrix,M,no_of_constraints,n);
+	if(check==1) Matrix[no_of_constraints][n]*=-1;
+	cout<<"\n";
+	Display_Matrix(Matrix,no_of_constraints+1,n+1);
+	cout<<"\n";
+	End_Solution(Matrix,M,no_of_constraints,n);
+	cout<<"\n\n";
+	return 0;
+}

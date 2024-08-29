@@ -1,0 +1,182 @@
+#include<stdio.h>
+#include <bits/stdc++.h>
+#include<iostream>
+using namespace std;
+int all_empty (int a[][12], int n, int m)
+{
+  int flag = 1;
+  for (int i = 0; i < n; i++)
+    {
+      for (int j = 0; j < m; j++)
+	{
+	  if (a[i][j] != -1)
+	    {
+	      flag = 0;
+	    }
+	}
+    }
+  return flag;
+}
+
+// int *
+// min_cost (int a[][12], int n, int m)
+// {
+//   int min = INT_MAX;
+//   int array[2] = { 0 };
+//   for (int i = 1; i <= n; i++)
+//     {
+//       for (int j = 1; j <= m; j++)
+//      {
+//        if (a[i][j] < min && a[i][j] > 0)
+//          {
+//            min = a[i][j];
+//            array[0] = i;
+//            array[1] = j;
+//          }
+//      }
+//     }
+//   return array;
+// }
+
+int main ()
+{
+  cout << "Maximum 10 entries are allowed\n";
+  int a[12][12], c[12], d[12];
+  int array[2];
+  int m, n, sum = 0, e = 0, f = 0;
+  cout << "enter the no. of companies ";
+  cin >> n;
+  cout << "enter the no. of warehouses ";
+  cin >> m;
+  for (e = 0; e < n; e++)
+    {
+      for (f = 0; f < m; f++)
+	{
+	  cout << "enter values of array element " << e + 1 << f + 1 << " ";
+	  cin >> a[e][f];
+	}
+    }
+  for (e = 0; e < n; e++)
+    {
+      cout << "Enter value of supply " << e + 1 << " ";
+      cin >> c[e];
+    }
+  for (f = 0; f < m; f++)
+    {
+      cout << "enter value of demand " << f + 1 << " ";
+      cin >> d[f];
+    }
+  int v1 = 0, v2 = 0;
+
+  while (!all_empty (a, n, m))
+//   int counter = 1;
+//   while (counter++ <= 10)
+    {
+      //   array= min_cost(a,n,m);
+      //   cout << "Not all -1\n";
+      int min = INT_MAX;
+      int array[2] = { 0 };
+      for (int i = 0; i < n; i++)
+	{
+	  for (int j = 0; j < m; j++)
+	    {
+	      if (a[i][j] < min && a[i][j] > 0)
+		{
+		  min = a[i][j];
+		  //cout << "min is " << min << endl;
+		  array[0] = i;
+		  array[1] = j;
+		  //cout << i << " " << j << endl;
+		}
+	    }
+	}
+
+      v1 = array[0];
+      v2 = array[1];
+
+      cout << endl;
+      cout << "Minimum is a[" << array[0] << "][" << array[1] << "] is " <<
+	a[array[0]][array[1]] << endl;
+      cout << "d[v2]= " << d[v2] << "c[v1]= " << c[v1] << endl;
+      if (d[v2] < c[v1])
+	{
+	  c[v1] = c[v1] - d[v2];
+//        d[v2] = 0;
+
+	  sum = sum + (a[v1][v2] * d[v2]);
+	  d[v2] = 0;
+	  cout << endl;
+	  cout << "Till sum " << sum << endl;
+	  for (int k = 0; k < n; k++)
+	    {
+	      a[k][v2] = -1;
+	    }
+	  cout << endl;
+	  for (e = 0; e < n; e++)
+	    {
+	      for (f = 0; f < m; f++)
+		{
+		  //cout << "enter values of array element " << e << f << " ";
+		  cout << a[e][f] << " ";
+		}
+	      cout << endl;
+	    }
+
+
+	}
+
+      else if (d[v2] > c[v1])
+	{
+	  d[v2] = d[v2] - c[v1];
+
+	  sum = sum + (a[v1][v2] * c[v1]);
+	  c[v1] = 0;
+	  cout << endl;
+	  cout << "Till sum " << sum << endl;
+	  for (int k = 0; k < m; k++)
+	    {
+	      a[v1][k] = -1;
+	    }
+	  cout << endl;
+	  for (e = 0; e < n; e++)
+	    {
+	      for (f = 0; f < m; f++)
+		{
+		  //cout << "enter values of array element " << e << f << " ";
+		  cout << a[e][f] << " ";
+		}
+	      cout << endl;
+	    }
+	}
+
+      else if (d[v2] == c[v1])
+	{
+
+
+	  sum = sum + (a[v1][v2] * c[v1]);
+	  d[v2] = d[v2] - c[v1];
+	  c[v1] = 0;
+	  cout << endl;
+	  cout << "Till sum " << sum << endl;
+
+	  for (int k = 0; k < m; k++)
+	    {
+	      a[v1][k] = -1;
+	    }
+	  cout << endl;
+	  for (e = 0; e < n; e++)
+	    {
+	      for (f = 0; f < m; f++)
+		{
+		  //cout << "enter values of array element " << e << f << " ";
+		  cout << a[e][f] << " ";
+		}
+	      cout << endl;
+	    }
+	}
+
+    }
+
+  cout << endl << "the optimal solution is: " << sum << endl;
+
+}

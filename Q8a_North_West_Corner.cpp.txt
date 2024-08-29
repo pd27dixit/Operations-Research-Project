@@ -1,0 +1,59 @@
+#include<stdio.h>
+#include<iostream>
+using namespace std;
+int main ()
+{
+  cout<<"Maximum 10 entries are allowed\n";
+  int a[12][12],c[12],d[12];
+  int m, n, sum = 0, e = 0, f = 0;
+  cout << "enter the no. of companies ";
+  cin >> n;
+  cout << "enter the no. of warehouses ";
+  cin >> m;
+  for (e = 1; e <= n; e++)
+    {
+      for (f = 1; f <= m; f++)
+	{
+	  cout << "enter values of array element " << e << f<<" ";
+	  cin >> a[e][f];
+	}
+    }
+  for (e = 1; e <= n; e++)
+    {
+      cout << "Enter value of supply " <<e<<" ";
+      cin >> c[e];
+    }
+  for (f = 1; f <= m; f++)
+    {
+      cout << "enter value of demand "<<f<<" ";
+      cin >> d[f];
+    }
+    e=1;
+    f=1;
+  while (e <= n && f<=m)
+    {
+      if(d[f] < c[e])
+      {
+          c[e]=c[e]-d[f];
+          sum=sum+(a[e][f] * d[f]);
+          f++;
+      }
+      else if( d[f] > c[e])
+      {
+          d[f]=d[f]-c[e];
+          sum=sum+(a[e][f] * c[e]);
+          e++;
+      }
+      else if( d[f] == c[e])
+      {
+           d[f]=d[f]-c[e];
+           sum=sum+(a[e][f] * c[e]);
+           e++;
+           f++;
+      }
+    }
+  cout << "the optimal solution is: "<<sum<<endl;
+  
+}
+
+
